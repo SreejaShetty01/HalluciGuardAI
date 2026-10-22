@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Test Prompts — HalluciGuard{% endblock %}
+{% block page_title %}Prompt Testing Lab{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+    <!-- Main Form -->
+    <div class="col-lg-7">
+        <div class="glass-card p-4 mb-4">
+            <div class="section-title"><i class="fas fa-flask"></i>Enter Your Research Query</div>
+            <p style="color:var(--text-2);font-size:14px;margin-bottom:20px;">
+                We'll automatically generate 4 prompt variants, call the Gemini API for each,
+                and analyze hallucination rates in real-time.
+            </p>
+
+            <form method="POST" onsubmit="handleSubmit(event)">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Question / Query</label>
+                    <textarea name="query" class="form-control" rows="5" id="queryInput"
+                        placeholder="e.g., What is diabetes and how does insulin resistance develop?&#10;e.g., Explain the causes and effects of climate change.&#10;e.g., How does the human immune system fight viral infections?" required></textarea>
+                </div>
+
+                <!-- Sample Queries -->
+                <div class="mb-4">
+                    <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Quick examples:</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for q in sample_queries %}
+                        <button type="button" onclick="setQuery('{{ q }}')"
+                            style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-2);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;transition:all 0.2s;"
+                            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-2)'">
+                            {{ q|truncatechars:35 }}
+                        </button>
+                        {% empty %}
+                        <button type="button" onclick="setQuery('What is diabetes and how does it affect the body?')"
+                            style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-2);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;">
+                            What is diabetes?
+                        </button>
+                        <button type="button" onclick="setQuery('Explain the causes of climate change.')"
+                            style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-2);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;">
+                            Causes of climate change
+                        </button>
+                        <button type="button" onclick="setQuery('How does the human immune system work?')"
+                            style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-2);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;">
+                            Human immune system
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-ai" id="submitBtn">
+                    <i class="fas fa-rocket"></i> Generate &amp; Analyze All 4 Prompts
+                </button>
+            </form>
+        </div>
+
+        <!-- Prompt Type Preview Cards -->
+        <div class="glass-card p-4">
+            <div class="section-title"><i class="fas fa-info-circle"></i>Prompt Types Being Generated</div>
+            <div class="row g-3">
+                <div class="col-6">
+                    <div style="background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.18);border-radius:10px;padding:14px;">
+                        <span class="badge badge-zero px-3 py-1 rounded-pill mb-2">Zero-Shot</span>
+                        <p style="color:var(--text-3);font-size:12px;margin:0;line-height:1.6;">Direct question. No examples. Tests raw model knowledge and tendency to hallucinate.</p>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);border-radius:10px;padding:14px;">
+                        <span class="badge badge-few px-3 py-1 rounded-pill mb-2">Few-Shot</span>
+                        <p style="color:var(--text-3);font-size:12px;margin:0;line-height:1.6;">3 curated examples shown before the question. Guides style and accuracy.</p>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.18);border-radius:10px;padding:14px;">
+                        <span class="badge badge-cot px-3 py-1 rounded-pill mb-2">Chain-of-Thought</span>
+                        <p style="color:var(--text-3);font-size:12px;margin:0;line-height:1.6;">Forces step-by-step reasoning. Reduces hallucination via structured thinking.</p>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.18);border-radius:10px;padding:14px;">
+                        <span class="badge badge-role px-3 py-1 rounded-pill mb-2">Role-Based</span>
+                        <p style="color:var(--text-3);font-size:12px;margin:0;line-height:1.6;">Expert persona with explicit accuracy constraints. Strictest prompt type.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar: Recent + Tips -->
+    <div class="col-lg-5">
+        <div class="glass-card p-4 mb-4">
+            <div class="section-title"><i class="fas fa-history"></i>Recent Queries</div>
+            {% if recent %}
+            {% for h in recent %}
+            <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:8px;cursor:pointer;"
+                 onclick="setQuery('{{ h.query|escapejs }}')">
+                <div style="color:var(--text-1);font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ h.query|truncatechars:65 }}</div>
+                <div style="color:var(--text-3);font-size:11px;margin-top:4px;display:flex;justify-content:space-between;align-items:center;">
+                    <span>{{ h.created_at|date:"M d, Y" }} &bull; {{ h.responses.count }} responses</span>
+                    <a href="{% url 'compare_responses' h.session_id %}" style="color:var(--accent);font-size:11px;" onclick="event.stopPropagation();">View →</a>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="no-data" style="padding:24px;">
+                <i class="fas fa-history"></i>
+                <p>No queries yet. Start your first test!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="glass-card p-4">
+            <div class="section-title"><i class="fas fa-lightbulb"></i>Tips for Better Results</div>
+            <ul style="color:var(--text-2);font-size:13.5px;padding-left:18px;line-height:2.1;margin:0;">
+                <li>Ask factual questions (science, medicine, history, tech)</li>
+                <li>Be specific — vague queries produce vague responses</li>
+                <li>Try questions where hallucination is likely (statistics, dates)</li>
+                <li>Use full sentences for best prompt generation quality</li>
+                <li>Compare responses across prompt types for insights</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setQuery(q) {
+    document.getElementById('queryInput').value = q;
+    document.getElementById('queryInput').focus();
+}
+function handleSubmit(e) {
+    const q = document.getElementById('queryInput').value.trim();
+    if (!q || q.length < 5) { e.preventDefault(); return; }
+    document.getElementById('submitBtn').disabled = true;
+    showSpinner('Generating 4 prompt variants & calling Gemini API...');
+}
+</script>
+{% endblock %}

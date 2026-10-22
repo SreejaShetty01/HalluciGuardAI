@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HalluciGuard AI{% endblock %}</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'css/main.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<!-- Loading Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="ai-spinner"></div>
+    <p class="spinner-text" id="spinnerText">Processing with Gemini AI...</p>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:6px;">This may take 15–30 seconds</p>
+</div>
+
+<div class="app-wrapper">
+    <!-- ===== Sidebar ===== -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <div class="brand-icon"><i class="fas fa-brain"></i></div>
+                <div class="brand-text">
+                    <span class="brand-name">HalluciGuard</span>
+                    <span class="brand-sub">AI Research Platform</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">{{ user.first_name.0|default:user.username.0|upper }}{{ user.last_name.0|upper }}</div>
+            <div class="user-info">
+                <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                <span class="user-badge">Researcher</span>
+            </div>
+        </div>
+
+        <ul class="sidebar-nav">
+            <li class="nav-label">Main</li>
+            <li>
+                <a href="{% url 'user_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'user_dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'prompt_test' %}" class="nav-link {% if request.resolver_match.url_name == 'prompt_test' %}active{% endif %}">
+                    <i class="fas fa-flask"></i><span>Test Prompts</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'prompt_history' %}" class="nav-link {% if request.resolver_match.url_name == 'prompt_history' %}active{% endif %}">
+                    <i class="fas fa-history"></i><span>Prompt History</span>
+                </a>
+            </li>
+
+            <li class="nav-label">Analytics</li>
+            <li>
+                <a href="{% url 'analytics_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'analytics_dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-bar"></i><span>Analytics</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'hallucination_reports' %}" class="nav-link {% if request.resolver_match.url_name == 'hallucination_reports' %}active{% endif %}">
+                    <i class="fas fa-bug"></i><span>Reports</span>
+                </a>
+            </li>
+
+            <li class="nav-label">System</li>
+            {% if user.is_staff %}
+            <li>
+                <a href="/admin/" class="nav-link" target="_blank">
+                    <i class="fas fa-shield-alt"></i><span>Admin Panel</span>
+                </a>
+            </li>
+            {% endif %}
+            <li>
+                <a href="{% url 'logout' %}" class="nav-link logout-link">
+                    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- ===== Main Content ===== -->
+    <main class="main-content" id="mainContent">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h5 class="page-title">{% block page_title %}Dashboard{% endblock %}</h5>
+            </div>
+            <div class="topbar-right">
+                <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">
+                    <i id="themeIcon" class="fas fa-moon"></i>
+                </button>
+                <a href="{% url 'prompt_test' %}" class="btn-ai-sm">
+                    <i class="fas fa-plus me-1"></i>New Test
+                </a>
+                <div class="topbar-avatar" title="{{ user.get_full_name }}">
+                    {{ user.first_name.0|default:user.username.0|upper }}
+                </div>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-2" role="alert">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'danger' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Page Content -->
+        <div class="content-area">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{% else %}
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+{% load static %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

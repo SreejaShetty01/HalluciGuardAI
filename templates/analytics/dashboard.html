@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% block title %}Analytics — HalluciGuard{% endblock %}
+{% block page_title %}Analytics Dashboard{% endblock %}
+{% block content %}
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon bg-grad-primary"><i class="fas fa-database text-white"></i></div>
+            <div class="stat-value" data-count="{{ total_queries }}">0</div>
+            <div class="stat-label">Total Queries</div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon bg-grad-danger"><i class="fas fa-bug text-white"></i></div>
+            <div class="stat-value" data-count="{{ total_hallucinations }}">0</div>
+            <div class="stat-label">Hallucinations Detected</div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon bg-grad-warning"><i class="fas fa-stopwatch text-white"></i></div>
+            <div class="stat-value">{{ avg_latency }}s</div>
+            <div class="stat-label">Avg Response Latency</div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon bg-grad-success"><i class="fas fa-bullseye text-white"></i></div>
+            <div class="stat-value" data-count="{{ avg_accuracy }}">0</div>
+            <div class="stat-label">Avg Accuracy %</div>
+        </div>
+    </div>
+</div>
+
+{% if prompt_hall %}
+
+<!-- Row 1: Bar + Pie -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="glass-card p-4">
+            <div class="section-title"><i class="fas fa-chart-bar"></i>Prompt Type vs Hallucination, Accuracy & Confidence</div>
+            <div id="chartBar" style="min-height:300px;"></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4">
+            <div class="section-title"><i class="fas fa-chart-pie"></i>Hallucinated vs Accurate Responses</div>
+            <div id="chartPie" style="min-height:300px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Radar + Area -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <div class="section-title"><i class="fas fa-spider"></i>Radar: All Metrics by Prompt Type</div>
+            <div id="chartRadar" style="min-height:300px;"></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <div class="section-title"><i class="fas fa-area-chart"></i>Hallucination Trend Over Time</div>
+            <div id="chartArea" style="min-height:300px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 3: Heatmap -->
+<div class="glass-card p-4 mb-4">
+    <div class="section-title"><i class="fas fa-th"></i>Heatmap — Metric Intensity by Prompt Type</div>
+    <div id="chartHeatmap" style="min-height:220px;"></div>
+</div>
+
+<!-- Full Comparison Table -->
+<div class="glass-card p-4">
+    <div class="section-title"><i class="fas fa-table"></i>Full Comparative Analysis Table</div>
+    <div class="table-responsive">
+        <table class="ai-table">
+            <thead>
+                <tr>
+                    <th>Prompt Type</th>
+                    <th>Tests Run</th>
+                    <th>Hallucination %</th>
+                    <th>Accuracy %</th>
+                    <th>Confidence %</th>
+                    <th>Consistency %</th>
+                    <th>Fluency %</th>
+                    <th>Avg Latency</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in prompt_hall %}
+                <tr>
+                    <td>
+                        <span class="badge {% if p.prompt_type == 'zero_shot' %}badge-zero{% elif p.prompt_type == 'few_shot' %}badge-few{% elif p.prompt_type == 'chain_of_thought' %}badge-cot{% else %}badge-role{% endif %} px-3 py-1 rounded-pill" style="font-size:11px;">
+                            {{ p.prompt_type|title }}
+                        </span>
+                    </td>
+                    <td>{{ p.count }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="min-width:60px;">
+                                <div class="progress-bar {% if p.avg_hall < 30 %}bg-success{% elif p.avg_hall < 55 %}bg-warning{% else %}bg-danger{% endif %}"
+                                     style="width:{{ p.avg_hall }}%"></div>
+                            </div>
+                            <small style="color:{% if p.avg_hall < 30 %}var(--success){% elif p.avg_hall < 55 %}var(--warning){% else %}var(--danger){% endif %};font-weight:600;white-space:nowrap;">{{ p.avg_hall }}%</small>
+                        </div>
+                    </td>
+                    <td style="color:var(--info);">{{ p.avg_acc }}%</td>
+                    <td>{{ p.avg_conf }}%</td>
+                    <td>{{ p.avg_cons }}%</td>
+                    <td>{{ p.avg_flu }}%</td>
+                    <td style="color:var(--text-3);">{{ p.avg_lat }}s</td>
+                    <td>
+                        {% if p.avg_hall < 25 %}<span class="score-pill pill-good">Excellent</span>
+                        {% elif p.avg_hall < 50 %}<span class="score-pill pill-warn">Good</span>
+                        {% else %}<span class="score-pill pill-bad">Poor</span>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="glass-card p-5 text-center">
+    <div style="font-size:60px;opacity:0.12;margin-bottom:16px;">📊</div>
+    <h5 style="color:var(--text-1);font-weight:700;">No Analytics Data Yet</h5>
+    <p style="color:var(--text-3);max-width:400px;margin:8px auto 24px;">
+        Run some prompt tests to populate your analytics dashboard with charts, trends, and comparisons.
+    </p>
+    <a href="{% url 'prompt_test' %}" class="btn-ai">
+        <i class="fas fa-flask"></i> Run First Test
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const phData     = {{ prompt_hall_json|safe }};
+const hallYes    = {{ hall_yes }};
+const hallNo     = {{ hall_no }};
+const timeSeries = {{ time_series_json|safe }};
+const COLORS     = ['#6366f1','#10b981','#f59e0b','#ef4444'];
+
+if (phData.length > 0) {
+    const labels = phData.map(d => d.prompt_type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+
+    // ---- Bar Chart ----
+    new ApexCharts(document.getElementById('chartBar'), {
+        series: [
+            { name: 'Hallucination %', data: phData.map(d => d.avg_hall) },
+            { name: 'Accuracy %',      data: phData.map(d => d.avg_acc) },
+            { name: 'Confidence %',    data: phData.map(d => d.avg_conf) },
+        ],
+        chart: { type: 'bar', height: 300, background: 'transparent', toolbar: { show: false } },
+        plotOptions: { bar: { borderRadius: 6, columnWidth: '65%', dataLabels: { position: 'top' } } },
+        dataLabels: { enabled: false },
+        colors: ['#ef4444','#10b981','#3b82f6'],
+        xaxis: { categories: labels, labels: { style: { colors: '#9094b0', fontSize: '12px' } } },
+        yaxis: { max: 100, labels: { style: { colors: '#9094b0' } }, title: { text: 'Score (%)', style: { color:'#9094b0' } } },
+        grid: { borderColor: 'rgba(255,255,255,0.05)' },
+        legend: { labels: { colors: '#9094b0' }, position: 'top' },
+        tooltip: { theme: 'dark' },
+    }).render();
+
+    // ---- Pie Chart ----
+    new ApexCharts(document.getElementById('chartPie'), {
+        series: [hallYes, hallNo],
+        labels: ['Hallucinated', 'Accurate'],
+        chart: { type: 'donut', height: 300, background: 'transparent' },
+        colors: ['#ef4444','#10b981'],
+        legend: { labels: { colors: '#9094b0' }, position: 'bottom' },
+        plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, color: '#9094b0', label: 'Total' } } } } },
+        dataLabels: { style: { colors: ['#fff'] } },
+        tooltip: { theme: 'dark' },
+    }).render();
+
+    // ---- Radar Chart ----
+    new ApexCharts(document.getElementById('chartRadar'), {
+        series: phData.map((d, i) => ({
+            name: d.prompt_type.replace(/_/g,' '),
+            data: [d.avg_acc, d.avg_flu, 100 - d.avg_hall, d.avg_cons, d.avg_conf]
+        })),
+        chart: { type: 'radar', height: 300, background: 'transparent', toolbar: { show: false } },
+        xaxis: { categories: ['Accuracy','Fluency','Non-Hallucination','Consistency','Confidence'] },
+        colors: COLORS,
+        fill: { opacity: 0.12 },
+        stroke: { width: 2 },
+        markers: { size: 4 },
+        legend: { labels: { colors: '#9094b0' }, position: 'bottom' },
+        yaxis: { show: false },
+        tooltip: { theme: 'dark' },
+    }).render();
+
+    // ---- Area Chart (Time Series) ----
+    const ptypes = [...new Set(timeSeries.map(d => d.prompt_type))];
+    const days   = [...new Set(timeSeries.map(d => d.day))].sort();
+
+    const areaSeries = ptypes.length > 0 ? ptypes.map((pt, i) => ({
+        name: pt.replace(/_/g,' '),
+        data: days.map(day => {
+            const found = timeSeries.find(d => d.day === day && d.prompt_type === pt);
+            return found ? found.avg_hall : null;
+        })
+    })) : [{ name: 'No data', data: [0] }];
+
+    new ApexCharts(document.getElementById('chartArea'), {
+        series: areaSeries,
+        chart: { type: 'area', height: 300, background: 'transparent', toolbar: { show: false } },
+        xaxis: {
+            categories: days.length > 0 ? days : ['No data'],
+            labels: { style: { colors: '#9094b0', fontSize: '11px' } }
+        },
+        yaxis: { max: 100, labels: { style: { colors: '#9094b0' } } },
+        colors: COLORS,
+        fill: { type: 'gradient', gradient: { opacityFrom: 0.28, opacityTo: 0.02 } },
+        stroke: { curve: 'smooth', width: 2 },
+        grid: { borderColor: 'rgba(255,255,255,0.05)' },
+        legend: { labels: { colors: '#9094b0' }, position: 'bottom' },
+        tooltip: { theme: 'dark' },
+    }).render();
+
+    // ---- Heatmap ----
+    const metrics = [
+        { name: 'Hallucination', key: 'avg_hall' },
+        { name: 'Accuracy',      key: 'avg_acc' },
+        { name: 'Confidence',    key: 'avg_conf' },
+        { name: 'Consistency',   key: 'avg_cons' },
+        { name: 'Fluency',       key: 'avg_flu' },
+    ];
+    const heatSeries = metrics.map(m => ({
+        name: m.name,
+        data: phData.map(d => ({ x: d.prompt_type.replace(/_/g,' '), y: d[m.key] }))
+    }));
+    new ApexCharts(document.getElementById('chartHeatmap'), {
+        series: heatSeries,
+        chart: { type: 'heatmap', height: 220, background: 'transparent', toolbar: { show: false } },
+        colors: ['#6366f1'],
+        dataLabels: { enabled: true, style: { fontSize: '11px', colors: ['#fff'] } },
+        xaxis: { labels: { style: { colors: '#9094b0', fontSize: '11px' } } },
+        yaxis: { labels: { style: { colors: '#9094b0', fontSize: '11px' } } },
+        legend: { show: false },
+        tooltip: { theme: 'dark' },
+    }).render();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Dashboard Console{% endblock %}
+
+{% block content %}
+<!-- Stat Cards Row -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-grad-primary text-white">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-value">{{ total_users }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-grad-success text-white">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-value">{{ active_users }}</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-grad-warning text-white">
+                <i class="fas fa-user-clock"></i>
+            </div>
+            <div class="stat-value">{{ inactive_users }}</div>
+            <div class="stat-label">Deactivated / Pending</div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-grad-info text-white">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div class="stat-value">{{ total_queries }}</div>
+            <div class="stat-label">Platform AI Queries</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Recent Registrations -->
+    <div class="col-12 col-lg-7">
+        <div class="glass-card p-4 h-100">
+            <h5 class="section-title"><i class="fas fa-history"></i>Recent Registrations</h5>
+            
+            {% if recent_users %}
+            <div class="table-responsive">
+                <table class="ai-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Date Joined</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in recent_users %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="topbar-avatar rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 32px; height: 32px; font-size: 11px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white;">
+                                        {{ user.first_name.0|default:user.username.0|upper }}
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-bold" style="color: var(--text-1) !important; font-size: 13px;">{{ user.get_full_name|default:user.username }}</span>
+                                        <span class="d-block" style="color: var(--text-2) !important; font-size: 11px;">{{ user.email }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: var(--text-2) !important; font-size: 12.5px;">{{ user.date_joined|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                <span class="score-pill pill-good"><i class="fas fa-check-circle me-1"></i>Active</span>
+                                {% else %}
+                                <span class="score-pill pill-bad"><i class="fas fa-exclamation-circle me-1"></i>Deactivated</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-users"></i>
+                <p>No user accounts have been registered yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Right Column: System Status & Quick Actions -->
+    <div class="col-12 col-lg-5">
+        <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+                <h5 class="section-title"><i class="fas fa-cogs"></i>Administrative Controls</h5>
+                <p class="text-muted" style="font-size: 13.5px; line-height: 1.6;">
+                    Welcome to the HalluciGuard System Administration Panel. You have full oversight of researchers, registration status toggles, user profiling details, and standard user databases.
+                </p>
+                <div class="alert alert-info py-2 px-3 mt-3 border-0" style="font-size: 13px; background: rgba(59,130,246,0.08);">
+                    <i class="fas fa-info-circle me-2 text-info"></i>Newly created accounts are **deactivated** by default. Admins must manually activate them from the User Directory.
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <div class="d-grid gap-3">
+                    <a href="{% url 'admin_users' %}" class="btn-ai w-100 justify-content-center py-2.5">
+                        <i class="fas fa-users-cog me-2"></i>Go to User Directory
+                    </a>
+                    <a href="{% url 'register' %}" class="btn-excel w-100 justify-content-center py-2.5" target="_blank">
+                        <i class="fas fa-plus me-2"></i>Create New User Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

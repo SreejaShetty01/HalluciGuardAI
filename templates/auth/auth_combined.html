@@ -1,0 +1,446 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+<style>
+    html,
+    body {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .sp-body {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-primary);
+        padding: 16px;
+        gap: 10px;
+        overflow: hidden;
+    }
+
+    .sp-container {
+        position: relative;
+        width: 620px;
+        max-width: calc(100vw - 32px);
+        height: 400px;
+        overflow: hidden;
+        border-radius: 16px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+        background: var(--bg-secondary);
+        flex-shrink: 0;
+        margin: 0 auto;
+    }
+
+    /* Both forms: absolute, left half, same position */
+    .sp-form {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 50%;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-secondary);
+        transition: all 0.6s ease-in-out;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .sp-signin {
+        z-index: 2;
+        opacity: 1;
+    }
+
+    /* Signup: hidden by default, scrollable to fit all fields */
+    .sp-signup {
+        z-index: 1;
+        opacity: 0;
+        align-items: flex-start;
+        overflow-y: auto;
+        padding-top: 14px;
+        padding-bottom: 14px;
+        justify-content: flex-start;
+    }
+
+    /* rpa = show Sign Up */
+    .sp-container.rpa .sp-signin {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    .sp-container.rpa .sp-signup {
+        transform: translateX(100%);
+        opacity: 1;
+        z-index: 5;
+        animation: spshow 0.6s;
+    }
+
+    @keyframes spshow {
+
+        0%,
+        49.99% {
+            opacity: 0;
+            z-index: 1;
+        }
+
+        50%,
+        100% {
+            opacity: 1;
+            z-index: 5;
+        }
+    }
+
+    /* Overlay: starts on RIGHT half */
+    .sp-overlay-wrap {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        transition: transform 0.6s ease-in-out;
+        z-index: 100;
+    }
+
+    .sp-container.rpa .sp-overlay-wrap {
+        transform: translateX(-100%);
+    }
+
+    /* Gradient strip: 200% wide, left:-100% so it spans full container */
+    .sp-overlay {
+        background: linear-gradient(135deg, #4338ca 0%, #6366f1 45%, #8b5cf6 100%);
+        position: relative;
+        left: -100%;
+        height: 100%;
+        width: 200%;
+        transform: translateX(0);
+        transition: transform 0.6s ease-in-out;
+        display: flex;
+    }
+
+    .sp-container.rpa .sp-overlay {
+        transform: translateX(50%);
+    }
+
+    .sp-ov-panel {
+        flex: 0 0 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 28px 28px;
+        text-align: center;
+        color: #fff;
+    }
+
+    .sp-ov-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .sp-ov-title {
+        font-size: 22px;
+        font-weight: 800;
+        margin: 0 0 8px;
+    }
+
+    .sp-ov-sub {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+        margin: 0 0 20px;
+        max-width: 200px;
+    }
+
+    .sp-ov-btn {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.85);
+        color: #fff;
+        padding: 10px 34px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background 0.25s;
+    }
+
+    .sp-ov-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Form inner */
+    .sp-inner {
+        width: 100%;
+        max-width: 260px;
+    }
+
+    .sp-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-1);
+        margin: 0 0 2px;
+    }
+
+    .sp-sub {
+        font-size: 10px;
+        color: var(--text-3);
+        margin: 0 0 8px;
+    }
+
+    .sp-inner .form-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text-2);
+        margin-bottom: 2px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .sp-inner .form-control {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 7px !important;
+        color: var(--text-1) !important;
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+        width: 100%;
+        line-height: 1.4;
+    }
+
+    .sp-inner .form-control:focus {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.14) !important;
+        outline: none;
+    }
+
+    .sp-inner .form-control::placeholder {
+        color: var(--text-3) !important;
+        font-size: 11px !important;
+    }
+
+    /* Tighten Bootstrap spacing inside signup form */
+    .sp-signup .mb-1,
+    .sp-signup .mb-2,
+    .sp-signup .mb-3 {
+        margin-bottom: 5px !important;
+    }
+
+    .sp-signup .g-2 {
+        --bs-gutter-y: 0.25rem;
+        --bs-gutter-x: 0.35rem;
+    }
+
+    .sp-btn {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        border-radius: 30px;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .sp-btn:hover {
+        opacity: 0.88;
+        transform: translateY(-1px);
+    }
+
+    /* Mobile */
+    @media (max-width: 650px) {
+        .sp-container {
+            height: auto;
+        }
+
+        .sp-form {
+            position: relative;
+            width: 100%;
+            height: auto;
+        }
+
+        .sp-overlay-wrap {
+            position: relative;
+            left: 0;
+            width: 100%;
+            height: 220px;
+        }
+
+        .sp-container.rpa .sp-overlay-wrap {
+            transform: none;
+        }
+
+        .sp-container.rpa .sp-signin {
+            transform: none;
+            opacity: 0;
+            display: none;
+        }
+
+        .sp-container.rpa .sp-signup {
+            transform: none;
+            position: relative;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block auth_content %}
+<div class="sp-body">
+
+    <!-- Back to Home and Theme Toggle Wrap -->
+    <div class="d-flex justify-content-between align-items-center mb-1" style="width: 620px; max-width: calc(100vw - 32px);">
+        <a href="{% url 'home' %}" style="
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-2); font-size: 13px; font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+        " onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-2)'">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+        <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-2); padding: 7px 11px; border-radius: 50%; cursor: pointer; transition: all var(--transition);">
+            <i id="themeIcon" class="fas fa-moon"></i>
+        </button>
+    </div>
+
+    <div class="sp-container {% if active_tab == 'register' %}rpa{% endif %}" id="spC">
+
+        <!-- SIGN IN FORM -->
+        <div class="sp-form sp-signin">
+            <div class="sp-inner">
+                <h2 class="sp-title">Sign In</h2>
+                <p class="sp-sub">Access your HalluciGuard research dashboard</p>
+                {% if messages and active_tab == 'login' %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mb-3" style="font-size:13px;">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter your username"
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter your password"
+                            required>
+                    </div>
+                    <button type="submit" class="sp-btn">Sign In &nbsp;<i class="fas fa-arrow-right"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SIGN UP FORM -->
+        <div class="sp-form sp-signup">
+            <div class="sp-inner" style="max-width:260px;">
+                <h2 class="sp-title">Create Account</h2>
+                <p class="sp-sub">Join the AI Hallucination Research Platform</p>
+                {% if messages and active_tab == 'register' %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mb-3" style="font-size:13px;">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                <form method="POST" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    <div class="row g-2 mb-1">
+                        <div class="col-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" name="first_name" class="form-control" placeholder="First" required
+                                value="{{ form.first_name.value|default:'' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" placeholder="Last"
+                                value="{{ form.last_name.value|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Choose a username" required
+                            value="{{ form.username.value|default:'' }}">
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" placeholder="your@email.com" required
+                            value="{{ form.email.value|default:'' }}">
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password1" class="form-control"
+                            placeholder="Create a strong password" required>
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" name="password2" class="form-control" placeholder="Confirm your password"
+                            required>
+                    </div>
+                    {% if form.errors %}
+                    <div class="alert alert-danger mb-1" style="font-size:11px; padding: 6px 10px;">
+                        {% for field in form %}{% for error in field.errors %}
+                        <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                        {% endfor %}{% endfor %}
+                        {% for error in form.non_field_errors %}
+                        <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="sp-btn">Create Account &nbsp;<i class="fas fa-rocket"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SLIDING GRADIENT OVERLAY -->
+        <div class="sp-overlay-wrap">
+            <div class="sp-overlay">
+
+                <!-- Left panel of overlay: "Welcome Back" — visible when rpa (Sign Up shown) -->
+                <div class="sp-ov-panel">
+                    <div class="sp-ov-icon"><i class="fas fa-brain"></i></div>
+                    <h2 class="sp-ov-title">Welcome Back!</h2>
+                    <p class="sp-ov-sub">Already have an account? Sign in to your dashboard.</p>
+                    <button class="sp-ov-btn" onclick="spToggle('login')">Sign In</button>
+                </div>
+
+                <!-- Right panel of overlay: "Hello Friend" — visible by default (Sign In shown) -->
+                <div class="sp-ov-panel">
+                    <div class="sp-ov-icon"><i class="fas fa-brain"></i></div>
+                    <h2 class="sp-ov-title">Hello, Friend!</h2>
+                    <p class="sp-ov-sub">New here? Join HalluciGuard and start your AI research journey.</p>
+                    <button class="sp-ov-btn" onclick="spToggle('register')">Sign Up</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var c = document.getElementById('spC');
+        function spToggle(tab) {
+            if (tab === 'register') c.classList.add('rpa');
+            else c.classList.remove('rpa');
+        }
+        window.spToggle = spToggle;
+    })();
+</script>
+{% endblock %}

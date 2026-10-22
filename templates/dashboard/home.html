@@ -1,0 +1,475 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>HalluciGuard AI — Hallucination Reduction Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="{% static 'css/main.css' %}" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg"
+        style="background: var(--bg-main); border-bottom: 1px solid var(--border); padding: 15px 0;">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}"
+                style="color: var(--text-1); font-weight: 700; font-size: 1.2rem;">
+                <div class="feature-icon bg-grad-primary mb-0" style="width:32px;height:32px;"><i
+                        class="fas fa-brain text-white" style="font-size:14px;"></i></div>
+                HalluciGuard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                style="border-color: var(--border);">
+                <i class="fas fa-bars" style="color: var(--text-2);"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}"
+                            style="color: var(--text-2); font-weight: 500;">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal"
+                            style="color: var(--text-2); font-weight: 500;"><i
+                                class="fas fa-info-circle me-1"></i>About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin_login' %}"
+                            style="color: var(--text-2); font-weight: 500;"><i class="fas fa-shield-alt me-1"></i>Admin
+                            Portal</a>
+                    </li>
+                    <li class="nav-item d-flex align-items-center">
+                        <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme"
+                            style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-2); padding: 8px 12px; border-radius: 50%; cursor: pointer; transition: all var(--transition);">
+                            <i id="themeIcon" class="fas fa-moon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'login' %}" class="btn-ai"
+                            style="padding: 9px 22px; font-size: 14px; border-radius: 30px; display:inline-flex; align-items:center; gap:8px;">
+                            <i class="fas fa-user-circle"></i> Sign In / Up
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <section class="home-hero">
+        <div class="container py-5">
+            <div class="row align-items-center min-vh-100 py-5">
+                <!-- Left: Hero Text -->
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <div class="hero-chip">
+                        <i class="fas fa-brain"></i> AI Research Platform — Powered by Gemini
+                    </div>
+                    <h1 class="hero-title">
+                        Reduce AI Hallucinations with<br>Prompt Engineering
+                    </h1>
+                    <p class="hero-desc">
+                        Compare Zero-Shot, Few-Shot, Chain-of-Thought, and Role-Based prompts.
+                        Measure hallucination rates with advanced analytics and beautiful dashboards.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{% url 'register' %}" class="btn-ai" style="padding:12px 28px;font-size:15px;">
+                            Get Started Free <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <button class="btn" data-bs-toggle="modal" data-bs-target="#aboutModal"
+                            style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-1);padding:12px 28px;border-radius:8px;font-weight:600;font-size:15px;transition: all var(--transition);">
+                            <i class="fas fa-info-circle me-1"></i> About Project
+                        </button>
+                        <a href="{% url 'login' %}"
+                            style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-2);padding:12px 28px;border-radius:8px;font-weight:600;font-size:15px;transition: all var(--transition);">
+                            Sign In
+                        </a>
+                    </div>
+
+                    <!-- Stats row -->
+                    <div class="d-flex gap-4 mt-5 flex-wrap">
+                        <div>
+                            <div style="font-size:24px;font-weight:800;color:var(--text-1);">4</div>
+                            <div style="font-size:12px;color:var(--text-3);">Prompt Types</div>
+                        </div>
+                        <div style="width:1px;background:var(--border);"></div>
+                        <div>
+                            <div style="font-size:24px;font-weight:800;color:var(--text-1);">6+</div>
+                            <div style="font-size:12px;color:var(--text-3);">Analytics Charts</div>
+                        </div>
+                        <div style="width:1px;background:var(--border);"></div>
+                        <div>
+                            <div style="font-size:24px;font-weight:800;color:var(--text-1);">100%</div>
+                            <div style="font-size:12px;color:var(--text-3);">Free to Use</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Feature Cards -->
+                <div class="col-lg-6">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="feature-card">
+                                <div class="feature-icon bg-grad-primary"><i class="fas fa-bolt text-white"></i></div>
+                                <h6 style="color:var(--text-1);font-size:14px;font-weight:700;">Zero-Shot</h6>
+                                <p style="color:var(--text-3);font-size:12px;margin:0;">Direct query. Tests baseline
+                                    model knowledge.</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="feature-card">
+                                <div class="feature-icon bg-grad-success"><i class="fas fa-clone text-white"></i></div>
+                                <h6 style="color:var(--text-1);font-size:14px;font-weight:700;">Few-Shot</h6>
+                                <p style="color:var(--text-3);font-size:12px;margin:0;">Curated examples guide the
+                                    model's answer style.</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="feature-card">
+                                <div class="feature-icon bg-grad-warning"><i class="fas fa-link text-white"></i></div>
+                                <h6 style="color:var(--text-1);font-size:14px;font-weight:700;">Chain-of-Thought</h6>
+                                <p style="color:var(--text-3);font-size:12px;margin:0;">Step-by-step reasoning for
+                                    better accuracy.</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="feature-card">
+                                <div class="feature-icon bg-grad-danger"><i class="fas fa-user-tie text-white"></i>
+                                </div>
+                                <h6 style="color:var(--text-1);font-size:14px;font-weight:700;">Role-Based</h6>
+                                <p style="color:var(--text-3);font-size:12px;margin:0;">Expert persona with strict
+                                    accuracy constraints.</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="feature-card"
+                                style="background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.08));border-color:rgba(99,102,241,0.2);">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="feature-icon bg-grad-info mb-0"><i
+                                            class="fas fa-chart-bar text-white"></i></div>
+                                    <div>
+                                        <h6 style="color:var(--text-1);font-size:14px;font-weight:700;margin:0;">
+                                            Advanced Analytics Dashboard</h6>
+                                        <p style="color:var(--text-3);font-size:12px;margin:0;">Bar, Pie, Radar, Area,
+                                            Heatmap charts with full comparison tables</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Modal Custom Style & Structure -->
+    <style>
+        /* Custom Modal overrides for perfect Dark/Light theme consistency */
+        #aboutModal .modal-content {
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius) !important;
+            box-shadow: var(--shadow) !important;
+            backdrop-filter: var(--glass) !important;
+            -webkit-backdrop-filter: var(--glass) !important;
+            color: var(--text-1) !important;
+        }
+
+        #aboutModal .modal-header {
+            border-bottom: 1px solid var(--border) !important;
+            padding: 20px;
+            background: transparent !important;
+        }
+
+        #aboutModal .modal-footer {
+            border-top: 1px solid var(--border) !important;
+            padding: 16px 20px;
+            background: transparent !important;
+        }
+
+        #aboutModal .modal-title {
+            color: var(--text-1) !important;
+            font-weight: 700;
+        }
+
+        #aboutModal .modal-body {
+            padding: 24px;
+            color: var(--text-1) !important;
+            background: transparent !important;
+        }
+
+        /* Scrollbar style inside modal body */
+        #aboutModal .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #aboutModal .modal-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        /* Extends theme adaptation to table within modal */
+        #aboutModal .comparison-table-container {
+            background: var(--bg-primary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        #aboutModal .ai-table {
+            margin-bottom: 0;
+            background: transparent !important;
+        }
+
+        #aboutModal .ai-table thead th {
+            background: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border) !important;
+            color: var(--text-3) !important;
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        #aboutModal .ai-table tbody td {
+            border-bottom: 1px solid var(--border) !important;
+            color: var(--text-1) !important;
+            padding: 12px 16px;
+            font-size: 13.5px;
+        }
+
+        #aboutModal .ai-table tbody tr:last-child td {
+            border-bottom: 0 !important;
+        }
+
+        #aboutModal .ai-table tbody tr:hover {
+            background: var(--bg-card-hover) !important;
+        }
+
+        /* Dynamic active column highlighter for Your HalluciGuard AI */
+        #aboutModal .col-active-header {
+            background: rgba(99, 102, 241, 0.08) !important;
+            color: var(--text-1) !important;
+            font-weight: 700 !important;
+            border-bottom: 2px solid var(--accent) !important;
+        }
+
+        #aboutModal .col-active-cell {
+            background: rgba(99, 102, 241, 0.03) !important;
+            font-weight: 500 !important;
+        }
+
+        /* Close button filters */
+        [data-theme="light"] #aboutModal .btn-close {
+            filter: none !important;
+            opacity: 0.7;
+        }
+
+        [data-theme="light"] #aboutModal .btn-close:hover {
+            opacity: 1;
+        }
+
+        [data-theme="dark"] #aboutModal .btn-close {
+            filter: invert(1) brightness(0.8) !important;
+            opacity: 0.7;
+        }
+
+        [data-theme="dark"] #aboutModal .btn-close:hover {
+            opacity: 1;
+        }
+    </style>
+
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="aboutModalLabel">
+                        <div class="feature-icon bg-grad-primary mb-0" style="width:36px;height:36px;"><i
+                                class="fas fa-brain text-white" style="font-size:16px;"></i></div>
+                        Base Paper vs. HalluciGuard AI
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-4" style="color: var(--text-2); font-size: 14px; line-height: 1.6;">
+                        <strong>HalluciGuard AI</strong> transitions the static research findings of the base paper on
+                        LLM hallucination behaviors into an active, fully automated, and extensible web platform. Below
+                        is a detailed feature-by-feature comparison demonstrating how our system advances beyond the
+                        base study.
+                    </p>
+                    <div class="table-responsive comparison-table-container">
+                        <table class="ai-table align-middle">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Feature</th>
+                                    <th scope="col">Base Paper</th>
+                                    <th scope="col" class="col-active-header">Your HalluciGuard AI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Objective -->
+                                <tr>
+                                    <td style="font-weight: 600;">Objective</td>
+                                    <td style="color: var(--text-2);">Research study on hallucination behavior of LLMs
+                                    </td>
+                                    <td class="col-active-cell">Complete web-based hallucination detection and analysis
+                                        platform</td>
+                                </tr>
+                                <!-- Models Evaluated -->
+                                <tr>
+                                    <td style="font-weight: 600;">Models Evaluated</td>
+                                    <td style="color: var(--text-2);">ChatGPT, Gemini, Grok, Copilot</td>
+                                    <td class="col-active-cell">Gemini API with extensible architecture for additional
+                                        LLMs</td>
+                                </tr>
+                                <!-- Prompt Evaluation -->
+                                <tr>
+                                    <td style="font-weight: 600;">Prompt Evaluation</td>
+                                    <td style="color: var(--text-2);">80 predefined prompts</td>
+                                    <td class="col-active-cell">Dynamic user-generated prompts</td>
+                                </tr>
+                                <!-- Prompt Types -->
+                                <tr>
+                                    <td style="font-weight: 600;">Prompt Types</td>
+                                    <td style="color: var(--text-2);">Reference Generation, Factual Explanation,
+                                        Abstract Generation, Writing Improvement</td>
+                                    <td class="col-active-cell">Multiple prompt engineering strategies generated
+                                        automatically</td>
+                                </tr>
+                                <!-- Hallucination Detection -->
+                                <tr>
+                                    <td style="font-weight: 600;">Hallucination Detection</td>
+                                    <td style="color: var(--text-2);">Manual evaluation using human reviewers</td>
+                                    <td class="col-active-cell">Automated hallucination analysis engine</td>
+                                </tr>
+                                <!-- Scoring Method -->
+                                <tr>
+                                    <td style="font-weight: 600;">Scoring Method</td>
+                                    <td style="color: var(--text-2);">Hallucination Index (HI)</td>
+                                    <td class="col-active-cell">Hallucination Score, Accuracy Score, Confidence Score,
+                                        Consistency Score, Fluency Score, Similarity Score</td>
+                                </tr>
+                                <!-- Factual Consistency Check -->
+                                <tr>
+                                    <td style="font-weight: 600;">Factual Consistency Check</td>
+                                    <td style="color: var(--text-2);">Human-based scoring rubric</td>
+                                    <td class="col-active-cell">Automated factual consistency evaluation</td>
+                                </tr>
+                                <!-- Reference Validation -->
+                                <tr>
+                                    <td style="font-weight: 600;">Reference Validation</td>
+                                    <td style="color: var(--text-2);">Manual verification</td>
+                                    <td class="col-active-cell">Rule-based hallucination detection and suspicious phrase
+                                        analysis</td>
+                                </tr>
+                                <!-- Real-Time Prediction -->
+                                <tr>
+                                    <td style="font-weight: 600;">Real-Time Prediction</td>
+                                    <td><span class="score-pill pill-bad"><i class="fas fa-times-circle"></i> Not
+                                            available</span></td>
+                                    <td class="col-active-cell"><span class="score-pill pill-good"><i
+                                                class="fas fa-check-circle"></i> Available</span></td>
+                                </tr>
+                                <!-- User Query Testing -->
+                                <tr>
+                                    <td style="font-weight: 600;">User Query Testing</td>
+                                    <td><span class="score-pill pill-bad"><i class="fas fa-times-circle"></i> Not
+                                            available</span></td>
+                                    <td class="col-active-cell"><span class="score-pill pill-good"><i
+                                                class="fas fa-check-circle"></i> Available</span></td>
+                                </tr>
+                                <!-- Prompt Comparison -->
+                                <tr>
+                                    <td style="font-weight: 600;">Prompt Comparison</td>
+                                    <td style="color: var(--text-2);">Research-only comparison</td>
+                                    <td class="col-active-cell">Automated best prompt selection</td>
+                                </tr>
+                                <!-- Dashboard -->
+                                <tr>
+                                    <td style="font-weight: 600;">Dashboard</td>
+                                    <td style="color: var(--text-2);">Static research graphs</td>
+                                    <td class="col-active-cell">Interactive analytics dashboard</td>
+                                </tr>
+                                <!-- User Authentication -->
+                                <tr>
+                                    <td style="font-weight: 600;">User Authentication</td>
+                                    <td><span class="score-pill pill-bad"><i class="fas fa-times-circle"></i> Not
+                                            available</span></td>
+                                    <td class="col-active-cell"><span class="score-pill pill-good"><i
+                                                class="fas fa-check-circle"></i> Available</span></td>
+                                </tr>
+                                <!-- Admin Panel -->
+                                <tr>
+                                    <td style="font-weight: 600;">Admin Panel</td>
+                                    <td><span class="score-pill pill-bad"><i class="fas fa-times-circle"></i> Not
+                                            available</span></td>
+                                    <td class="col-active-cell"><span class="score-pill pill-good"><i
+                                                class="fas fa-check-circle"></i> Available</span></td>
+                                </tr>
+                                <!-- Query History -->
+                                <tr>
+                                    <td style="font-weight: 600;">Query History</td>
+                                    <td><span class="score-pill pill-bad"><i class="fas fa-times-circle"></i> Not
+                                            available</span></td>
+                                    <td class="col-active-cell"><span class="score-pill pill-good"><i
+                                                class="fas fa-check-circle"></i> Available</span></td>
+                                </tr>
+                                <!-- Report Generation -->
+                                <tr>
+                                    <td style="font-weight: 600;">Report Generation</td>
+                                    <td><span class="score-pill pill-bad"><i class="fas fa-times-circle"></i> Not
+                                            available</span></td>
+                                    <td class="col-active-cell"><span class="score-pill pill-good"><i
+                                                class="fas fa-check-circle"></i> Available</span></td>
+                                </tr>
+                                <!-- User Activity Tracking -->
+                                <tr>
+                                    <td style="font-weight: 600;">User Activity Tracking</td>
+                                    <td><span class="score-pill pill-bad"><i class="fas fa-times-circle"></i> Not
+                                            available</span></td>
+                                    <td class="col-active-cell"><span class="score-pill pill-good"><i
+                                                class="fas fa-check-circle"></i> Available</span></td>
+                                </tr>
+                                <!-- Web Deployment -->
+                                <tr>
+                                    <td style="font-weight: 600;">Web Deployment</td>
+                                    <td style="color: var(--text-2);">Research paper only</td>
+                                    <td class="col-active-cell">Fully deployed Django application</td>
+                                </tr>
+                                <!-- Data Storage -->
+                                <tr>
+                                    <td style="font-weight: 600;">Data Storage</td>
+                                    <td style="color: var(--text-2);">Experimental dataset</td>
+                                    <td class="col-active-cell">Persistent database storage</td>
+                                </tr>
+                                <!-- Visualization -->
+                                <tr>
+                                    <td style="font-weight: 600;">Visualization</td>
+                                    <td style="color: var(--text-2);">Research charts and graphs</td>
+                                    <td class="col-active-cell">Real-time dashboard analytics</td>
+                                </tr>
+                                <!-- Transparency -->
+                                <tr>
+                                    <td style="font-weight: 600;">Transparency</td>
+                                    <td style="color: var(--text-2);">Research findings</td>
+                                    <td class="col-active-cell">User-accessible reports and metrics</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-1); padding: 8px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+
+</html>

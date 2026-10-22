@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Hallucination Reports — HalluciGuard{% endblock %}
+{% block page_title %}Hallucination Reports{% endblock %}
+{% block content %}
+
+<!-- Search -->
+<div class="glass-card p-4 mb-4">
+    <form method="GET" class="d-flex gap-3">
+        <input type="text" name="search" class="form-control" placeholder="Search by query..."
+               value="{{ search }}" style="max-width:400px;">
+        <button type="submit" class="btn-ai" style="white-space:nowrap;">
+            <i class="fas fa-search"></i> Filter
+        </button>
+        {% if search %}
+        <a href="{% url 'hallucination_reports' %}" class="btn-excel" style="white-space:nowrap;">
+            <i class="fas fa-times"></i> Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Reports Table -->
+<div class="glass-card p-4">
+    <div class="section-title mb-3">
+        <i class="fas fa-bug"></i>Detailed Hallucination Analysis Reports
+    </div>
+
+    {% if reports %}
+    <div class="table-responsive">
+        <table class="ai-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Query</th>
+                    <th>Prompt Type</th>
+                    <th>Hallucination %</th>
+                    <th>Factual Score</th>
+                    <th>Keyword Issues</th>
+                    <th>Risk Level</th>
+                    <th>Suspicious Phrases</th>
+                    <th>Date</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rpt in reports %}
+                <tr>
+                    <td style="color:var(--text-3);">{{ forloop.counter }}</td>
+                    <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                        title="{{ rpt.response.prompt_history.query }}">
+                        {{ rpt.response.prompt_history.query|truncatechars:50 }}
+                    </td>
+                    <td>
+                        <span class="badge {% if rpt.response.prompt_type == 'zero_shot' %}badge-zero{% elif rpt.response.prompt_type == 'few_shot' %}badge-few{% elif rpt.response.prompt_type == 'chain_of_thought' %}badge-cot{% else %}badge-role{% endif %} px-2 py-1 rounded-pill" style="font-size:10px;">
+                            {{ rpt.response.get_prompt_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="color:{% if rpt.overall_hallucination_pct > 50 %}var(--danger){% elif rpt.overall_hallucination_pct > 25 %}var(--warning){% else %}var(--success){% endif %};font-weight:700;">
+                            {{ rpt.overall_hallucination_pct|floatformat:1 }}%
+                        </span>
+                    </td>
+                    <td style="color:var(--text-2);">{{ rpt.factual_consistency|floatformat:2 }}</td>
+                    <td style="color:var(--text-2);">{{ rpt.keyword_mismatch_count }}</td>
+                    <td>
+                        <span class="score-pill {% if rpt.overall_hallucination_pct > 50 %}pill-bad{% elif rpt.overall_hallucination_pct > 25 %}pill-warn{% else %}pill-good{% endif %}">
+                            {% if rpt.overall_hallucination_pct > 50 %}High
+                            {% elif rpt.overall_hallucination_pct > 25 %}Medium
+                            {% else %}Low{% endif %}
+                        </span>
+                    </td>
+                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3);font-size:12px;"
+                        title="{{ rpt.suspicious_phrases }}">
+                        {{ rpt.suspicious_phrases|default:"—"|truncatechars:35 }}
+                    </td>
+                    <td style="color:var(--text-3);white-space:nowrap;font-size:12px;">
+                        {{ rpt.created_at|date:"M d, Y" }}
+                    </td>
+                    <td>
+                        <a href="{% url 'compare_responses' rpt.response.prompt_history.session_id %}"
+                           class="btn-ai" style="padding:4px 10px;font-size:11px;">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-data">
+        <i class="fas fa-bug"></i>
+        <p>
+            {% if search %}
+                No reports found for "{{ search }}".
+            {% else %}
+                No hallucination reports yet.
+                <a href="{% url 'prompt_test' %}" style="color:var(--accent);">Run a test to generate reports.</a>
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
